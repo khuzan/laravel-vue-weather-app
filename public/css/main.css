@@ -9,14 +9,18 @@ body{
 }
 
 #mainapp{
-    background-image: url('../img/cold-bg.jpg');
+    background-image: url('../img/3d-nature-with-sun-mountains.jpg');
     background-size: cover;
     background-position: bottom;
     transition: 0.4;
 }
 
 #mainapp.warm {
-    background-image: url('../img/warm-bg.jpg');
+    background-image: url('../img/natural-landscape.jpg');
+}
+
+#mainapp.cold {
+    background-image: url('../img/winter.jpg');
 }
 
 main{

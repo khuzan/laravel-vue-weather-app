@@ -1,11 +1,20 @@
 <template>
-    <div id="mainapp" class="text-white mb-8" v-bind:class="{ warm: Math.round(TempConversion(currentTemperature.actual)) > 30}">
+    <div id="mainapp" class="text-white mb-8" 
+        v-bind:class="{ 
+        warm: Math.round(TempConversion(currentTemperature.actual)) > 30,
+        cold: Math.round(TempConversion(currentTemperature.actual)) <= 0
+    }">
         <main>
             <div class="search-box">
-                <input type="text" class="search-bar" placeholder="Search place...." v-model="query" @keypress="fetchWeather">
+                <input type="text" class="search-bar" placeholder="Search place...." v-model="query" 
+                @keyup.enter="fetchWeather">
             </div>
 
-            <div class="weather-wrap">
+            <div v-if="loading" class="loading">
+                <lottie-player src="https://assets1.lottiefiles.com/private_files/lf30_jmgekfqg.json"  background="transparent"  speed="1"  style="width: 300px; height: 300px;"  loop autoplay></lottie-player>
+            </div>
+
+            <div v-else class="weather-wrap">
                 <div class="location-box">
                     <div class="location">{{ location.city }}</div>
                     <div class="date">{{ toDayDate(location.date) }}</div>
@@ -54,10 +63,12 @@
 <script>
     export default {
         mounted() {
+            this.loading = true;
             this.fetchData()
         },
         data() {
             return {
+                loading: true,
                 apiKey: '39a8ff16787f42488cdf93ab214cfb92',
                 query: '',
                 currentTemperature: {
@@ -89,6 +100,7 @@
                 fetch(`api/weather?lat=${this.location.lat}&lng=${this.location.lng}`)
                 .then(response => response.json())
                 .then(data => {
+                    this.loading = false;
                     console.log(data);
                     this.currentTemperature.actual = Math.round(data.current.temp)
                     this.currentTemperature.feels = Math.round(data.current.feels_like)
@@ -109,10 +121,7 @@
             toDayDate(timestamp) {
                 const newDate = new Date(timestamp * 1000);
                 const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-                const year = newDate.getFullYear();
-                const month = months[newDate.getMonth()];
-                const date = newDate.getDate();
-                const toDate = date + ' ' + month + ' ' + year;
+                const toDate = newDate.getDate() + ' ' + months[newDate.getMonth()] + ' ' + newDate.getFullYear();
 
                 return toDate;
             },
@@ -121,13 +130,12 @@
 
                 return celcius;
             },
-            fetchWeather(e) {
-                if (e.key == "Enter") {
-                    fetch(`api/places?query=${ this.query }`)
-                        .then(res => {
-                            return res.json();
-                        }).then(this.setResults);
-                }
+            fetchWeather() {
+                this.loading = true;
+                fetch(`api/places?query=${ this.query }`)
+                .then(res => {
+                    return res.json();
+                }).then(this.setResults);
             },
             setResults(results) {
                 this.location.city = results.features[0].properties.formatted;

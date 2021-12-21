@@ -5296,12 +5296,23 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   mounted: function mounted() {
+    this.loading = true;
     this.fetchData();
   },
   data: function data() {
     return {
+      loading: true,
       apiKey: '39a8ff16787f42488cdf93ab214cfb92',
       query: '',
       currentTemperature: {
@@ -5335,6 +5346,7 @@ __webpack_require__.r(__webpack_exports__);
       fetch("api/weather?lat=".concat(this.location.lat, "&lng=").concat(this.location.lng)).then(function (response) {
         return response.json();
       }).then(function (data) {
+        _this.loading = false;
         console.log(data);
         _this.currentTemperature.actual = Math.round(data.current.temp);
         _this.currentTemperature.feels = Math.round(data.current.feels_like);
@@ -5353,22 +5365,18 @@ __webpack_require__.r(__webpack_exports__);
     toDayDate: function toDayDate(timestamp) {
       var newDate = new Date(timestamp * 1000);
       var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      var year = newDate.getFullYear();
-      var month = months[newDate.getMonth()];
-      var date = newDate.getDate();
-      var toDate = date + ' ' + month + ' ' + year;
+      var toDate = newDate.getDate() + ' ' + months[newDate.getMonth()] + ' ' + newDate.getFullYear();
       return toDate;
     },
     TempConversion: function TempConversion(kelvin) {
       var celcius = kelvin - 273.15;
       return celcius;
     },
-    fetchWeather: function fetchWeather(e) {
-      if (e.key == "Enter") {
-        fetch("api/places?query=".concat(this.query)).then(function (res) {
-          return res.json();
-        }).then(this.setResults);
-      }
+    fetchWeather: function fetchWeather() {
+      this.loading = true;
+      fetch("api/places?query=".concat(this.query)).then(function (res) {
+        return res.json();
+      }).then(this.setResults);
     },
     setResults: function setResults(results) {
       this.location.city = results.features[0].properties.formatted;
@@ -27994,6 +28002,8 @@ var render = function () {
       class: {
         warm:
           Math.round(_vm.TempConversion(_vm.currentTemperature.actual)) > 30,
+        cold:
+          Math.round(_vm.TempConversion(_vm.currentTemperature.actual)) <= 0,
       },
       attrs: { id: "mainapp" },
     },
@@ -28013,7 +28023,15 @@ var render = function () {
             attrs: { type: "text", placeholder: "Search place...." },
             domProps: { value: _vm.query },
             on: {
-              keypress: _vm.fetchWeather,
+              keyup: function ($event) {
+                if (
+                  !$event.type.indexOf("key") &&
+                  _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
+                ) {
+                  return null
+                }
+                return _vm.fetchWeather.apply(null, arguments)
+              },
               input: function ($event) {
                 if ($event.target.composing) {
                   return
@@ -28024,125 +28042,151 @@ var render = function () {
           }),
         ]),
         _vm._v(" "),
-        _c("div", { staticClass: "weather-wrap" }, [
-          _c("div", { staticClass: "location-box" }, [
-            _c("div", { staticClass: "location" }, [
-              _vm._v(_vm._s(_vm.location.city)),
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "date" }, [
-              _vm._v(_vm._s(_vm.toDayDate(_vm.location.date))),
-            ]),
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "weather-box" }, [
-            _c("div", { staticClass: "flex items-center weather-box" }, [
-              _c("div", [
-                _c("div", { staticClass: "temp" }, [
-                  _vm._v(
-                    _vm._s(
-                      Math.round(
-                        _vm.TempConversion(_vm.currentTemperature.actual)
-                      )
-                    ) + "°C"
-                  ),
+        _vm.loading
+          ? _c(
+              "div",
+              { staticClass: "loading" },
+              [
+                _c("lottie-player", {
+                  staticStyle: { width: "300px", height: "300px" },
+                  attrs: {
+                    src: "https://assets1.lottiefiles.com/private_files/lf30_jmgekfqg.json",
+                    background: "transparent",
+                    speed: "1",
+                    loop: "",
+                    autoplay: "",
+                  },
+                }),
+              ],
+              1
+            )
+          : _c("div", { staticClass: "weather-wrap" }, [
+              _c("div", { staticClass: "location-box" }, [
+                _c("div", { staticClass: "location" }, [
+                  _vm._v(_vm._s(_vm.location.city)),
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "date" }, [
+                  _vm._v(_vm._s(_vm.toDayDate(_vm.location.date))),
                 ]),
               ]),
               _vm._v(" "),
-              _c("div", { staticClass: "mx-5" }, [
-                _c("div", { staticClass: "weather-icon" }, [
-                  _c("img", {
-                    attrs: {
-                      src:
-                        "https://openweathermap.org/img/wn/" +
-                        _vm.currentTemperature.icon +
-                        "@2x.png",
-                    },
-                  }),
-                ]),
-                _vm._v(" "),
-                _c("div", { staticClass: "feels" }, [
-                  _vm._v(
-                    "Feels like " +
-                      _vm._s(
-                        Math.round(
-                          _vm.TempConversion(_vm.currentTemperature.feels)
-                        )
-                      ) +
-                      "°C"
-                  ),
-                ]),
-              ]),
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "weather" }, [
-              _vm._v(_vm._s(_vm.currentTemperature.summary)),
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "weather-description" }, [
-              _vm._v(_vm._s(_vm.currentTemperature.description)),
-            ]),
-          ]),
-          _vm._v(" "),
-          _c(
-            "div",
-            {
-              staticClass:
-                "future-weather text-sm font-semibold mt-8 px-6 py-8 overflow-hidden",
-            },
-            _vm._l(_vm.daily, function (day, index) {
-              return _c(
-                "div",
-                {
-                  key: day.dt,
-                  staticClass: "flex items-center",
-                  class: { "mt-8": index > 0 },
-                },
-                [
-                  _c("div", { staticClass: "w-2/6 text-lg text-gray-200" }, [
-                    _vm._v(_vm._s(_vm.toDayOfWeek(day.dt))),
+              _c("div", { staticClass: "weather-box" }, [
+                _c("div", { staticClass: "flex items-center weather-box" }, [
+                  _c("div", [
+                    _c("div", { staticClass: "temp" }, [
+                      _vm._v(
+                        _vm._s(
+                          Math.round(
+                            _vm.TempConversion(_vm.currentTemperature.actual)
+                          )
+                        ) + "°C"
+                      ),
+                    ]),
                   ]),
                   _vm._v(" "),
-                  _c("div", { staticClass: "w-4/6 px-4 flex items-center" }, [
-                    _c("div", [
+                  _c("div", { staticClass: "mx-5" }, [
+                    _c("div", { staticClass: "weather-icon" }, [
                       _c("img", {
                         attrs: {
                           src:
                             "https://openweathermap.org/img/wn/" +
-                            day.weather[0].icon +
+                            _vm.currentTemperature.icon +
                             "@2x.png",
-                          width: "30",
-                          height: "30",
                         },
                       }),
                     ]),
                     _vm._v(" "),
-                    _c("div", { staticClass: "ml-3" }, [
-                      _vm._v(_vm._s(day.weather[0].description)),
-                    ]),
-                  ]),
-                  _vm._v(" "),
-                  _c("div", { staticClass: "w-1/6 text-right" }, [
-                    _c("div", [
+                    _c("div", { staticClass: "feels" }, [
                       _vm._v(
-                        _vm._s(Math.round(_vm.TempConversion(day.temp.max))) +
-                          "°C"
-                      ),
-                    ]),
-                    _vm._v(" "),
-                    _c("div", [
-                      _vm._v(
-                        _vm._s(Math.round(_vm.TempConversion(day.temp.min))) +
+                        "Feels like " +
+                          _vm._s(
+                            Math.round(
+                              _vm.TempConversion(_vm.currentTemperature.feels)
+                            )
+                          ) +
                           "°C"
                       ),
                     ]),
                   ]),
-                ]
-              )
-            }),
-            0
-          ),
-        ]),
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "weather" }, [
+                  _vm._v(_vm._s(_vm.currentTemperature.summary)),
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "weather-description" }, [
+                  _vm._v(_vm._s(_vm.currentTemperature.description)),
+                ]),
+              ]),
+              _vm._v(" "),
+              _c(
+                "div",
+                {
+                  staticClass:
+                    "future-weather text-sm font-semibold mt-8 px-6 py-8 overflow-hidden",
+                },
+                _vm._l(_vm.daily, function (day, index) {
+                  return _c(
+                    "div",
+                    {
+                      key: day.dt,
+                      staticClass: "flex items-center",
+                      class: { "mt-8": index > 0 },
+                    },
+                    [
+                      _c(
+                        "div",
+                        { staticClass: "w-2/6 text-lg text-gray-200" },
+                        [_vm._v(_vm._s(_vm.toDayOfWeek(day.dt)))]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "div",
+                        { staticClass: "w-4/6 px-4 flex items-center" },
+                        [
+                          _c("div", [
+                            _c("img", {
+                              attrs: {
+                                src:
+                                  "https://openweathermap.org/img/wn/" +
+                                  day.weather[0].icon +
+                                  "@2x.png",
+                                width: "30",
+                                height: "30",
+                              },
+                            }),
+                          ]),
+                          _vm._v(" "),
+                          _c("div", { staticClass: "ml-3" }, [
+                            _vm._v(_vm._s(day.weather[0].description)),
+                          ]),
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "w-1/6 text-right" }, [
+                        _c("div", [
+                          _vm._v(
+                            _vm._s(
+                              Math.round(_vm.TempConversion(day.temp.max))
+                            ) + "°C"
+                          ),
+                        ]),
+                        _vm._v(" "),
+                        _c("div", [
+                          _vm._v(
+                            _vm._s(
+                              Math.round(_vm.TempConversion(day.temp.min))
+                            ) + "°C"
+                          ),
+                        ]),
+                      ]),
+                    ]
+                  )
+                }),
+                0
+              ),
+            ]),
       ]),
     ]
   )
