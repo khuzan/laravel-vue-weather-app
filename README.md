@@ -31,7 +31,6 @@ Unfortunately, the api doesn`t work. Before using the api, testing are made thro
 * Research - forums
 * Code
 
-And fails.
 In order to achieve the functionality needed, it need some improvisation and use an alternate api.
 
 ## Development Time
